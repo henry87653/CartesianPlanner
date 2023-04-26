@@ -11,15 +11,21 @@
 
 #include "cartesian_planner/cartesian_planner.h"
 #include "cartesian_planner/visualization/plot.h"
+#include <chrono>
 
 namespace cartesian_planner {
 
 bool CartesianPlanner::Plan(const StartState &state, DiscretizedTrajectory &result) {
+  auto beforeTime = std::chrono::steady_clock::now();
   DiscretizedTrajectory coarse_trajectory;
   if(!dp_.Plan(state.x, state.y, state.theta, coarse_trajectory)) {
     ROS_ERROR("DP failed");
     return false;
   }
+  auto afterTime = std::chrono::steady_clock::now();
+  double duration_millisecond =
+      std::chrono::duration<double, std::milli>(afterTime - beforeTime).count();
+  std::cout << "DP success time:" << duration_millisecond << "ms" << std::endl;
 
   Constraints opti_constraints;
   opti_constraints.start_x = state.x; opti_constraints.start_y = state.y; opti_constraints.start_theta = state.theta;
