@@ -23,14 +23,35 @@ TrajectoryOptimizer::TrajectoryOptimizer(const CartesianPlannerConfig &config, c
   vehicle_ = config_.vehicle;
 }
 
+double Continuousize(const double theta,
+                                          const double last_theta) {
+  if (std::abs(theta - last_theta) <= M_PI) {
+    return theta;
+  }
+  double res = theta;
+  while (res - last_theta > M_PI) {
+    res -= 2 * M_PI;
+  }
+  while (res - last_theta < -M_PI) {
+    res += 2 * M_PI;
+  }
+  return res;
+}
+
 bool TrajectoryOptimizer::OptimizeIteratively(const DiscretizedTrajectory &coarse, const Constraints &constraints,
                                               States &result) {
   States guess;
+  std::cout << "Continuousize theta:";
+  double last_theta = coarse.data().front().theta;
   for (auto &pt: coarse.data()) {
     guess.x.push_back(pt.x);
     guess.y.push_back(pt.y);
-    guess.theta.push_back(pt.theta);
+    double theta = Continuousize(pt.theta, last_theta);
+    guess.theta.push_back(theta);
+    last_theta = theta;
+    std::cout << theta << ' ';
   }
+  std::cout << std::endl;
   CalculateInitialGuess(guess);
 
   int iter = 0;

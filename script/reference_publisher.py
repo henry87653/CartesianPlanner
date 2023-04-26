@@ -207,6 +207,11 @@ def main():
         [-180, 12],
         50,
     ]
+    # Circle-shape
+    # config = [
+    #     # degree, radius
+    #     [270, 20],
+    # ]
     center_line = generate_center_line(config)
     center_pub = rospy.Publisher('/center_line', CenterLine, queue_size=1, latch=True)
     center_pub.publish(center_line)
