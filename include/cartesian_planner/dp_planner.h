@@ -70,10 +70,15 @@ private:
   Env env_;
   CartesianPlannerConfig config_;
 
+  // NT中每个时间步，对应多少个离散轨迹点，nfe/NT = 320/5 = 64个
   int nseg_;
+  // NT中每个时间步，对应多长的轨迹时间，tf/NT = 16/5 = 3.2s
   double unit_time_;
+  // 实际时间分布，NT = 5大小的array，3.2s~16s均匀分布，左闭右闭
   std::array<double, NT> time_;
+  // 某个时间步的相对s，0~时间步最大纵向距离（3.2s * 12mps = 38.4m），均匀分布，NS = 7
   std::array<double, NS> station_;
+  // 某个时间步的相对l，0~1表示在参考线下上边界的分布，均匀分布，NL - 1 = 10-1 = 9
   std::array<double, NL - 1> lateral_;
 
   StartState state_;

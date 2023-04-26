@@ -35,6 +35,7 @@ double DpPlanner::GetCollisionCost(StateIndex parent_ind, StateIndex cur_ind) {
   double parent_s = state_.start_s, grandparent_s = state_.start_s;
   double last_l = state_.start_l, last_s = state_.start_s;
   if (parent_ind.t >= 0) {
+    // 更新父母s，祖父母s，如果存在
     auto &cell = state_space_[parent_ind.t][parent_ind.s][parent_ind.l];
     parent_s = cell.current_s;
 
@@ -84,12 +85,14 @@ std::pair<double, double> DpPlanner::GetCost(StateIndex parent_ind, StateIndex c
   double parent_l = state_.start_l, grandparent_l = state_.start_l;
 
   if (parent_ind.t >= 0) {
+    // 父母结点实际存在，更新sl，获取祖父母结点sl下标
     auto &cell = state_space_[parent_ind.t][parent_ind.s][parent_ind.l];
     int grandparent_s_ind = cell.parent_s_ind;
     int grandparent_l_ind = cell.parent_l_ind;
     parent_s = cell.current_s;
     parent_l = GetLateralOffset(parent_s, parent_ind.l);
 
+    // 祖父母结点实际存在，更新sl
     if (parent_ind.t >= 1) {
       grandparent_s = state_space_[parent_ind.t - 1][grandparent_s_ind][grandparent_l_ind].current_s;
       grandparent_l = GetLateralOffset(grandparent_s, grandparent_l_ind);
@@ -235,6 +238,8 @@ bool DpPlanner::Plan(double start_x, double start_y, double start_theta, Discret
   return min_cost < config_.dp_w_obstacle;
 }
 
+// 注意只有父母结点用s，其他是index，因为只要一个真实的s
+// 返回线性插值之后的sl轨迹序列
 std::vector<Vec2d> DpPlanner::InterpolateLinearly(double parent_s, int parent_l_ind, int cur_s_ind, int cur_l_ind) {
   std::vector<Vec2d> result(nseg_);
 
@@ -247,6 +252,7 @@ std::vector<Vec2d> DpPlanner::InterpolateLinearly(double parent_s, int parent_l_
   double cur_s = p_s + station_[cur_s_ind];
   double cur_l = GetLateralOffset(cur_s, cur_l_ind);
 
+  // 从父母结点，到当前结点，给定若干离散插值点数目，对sl坐标线性插值
   double s_step = station_[cur_s_ind] / nseg_;
   double l_step = (cur_l - p_l) / nseg_;
 
